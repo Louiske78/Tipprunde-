@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1b5534">
+<title>Kreisliga D Tipprunde</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap">
+<style>
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;font-size:14px}
+[hidden]{display:none!important}
+
+/* Layout: grüner Kopf wie eine Anzeigetafel, darunter Tabs und eine schmale Spalte mit Spielzeilen. */
+:root{
+  --bg:#eef2ee; --surface:#ffffff; --line:#d7dfd8; --fg:#16211a; --muted:#5e6d63;
+  --pitch:#1b5534; --pitch-2:#246b43; --on-pitch:#f4f8f3; --gold:#d9a514; --gold-ink:#3a2b00;
+  --good:#2f8a4f; --soft-good:#cfe8d6; --soft-good-ink:#1c4d2c; --zero:#e3e8e4; --zero-ink:#5e6d63; --danger:#b3361f;
+  --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e1611; --surface:#16211a; --line:#26352b; --fg:#e4ebe5; --muted:#93a598;
+  --pitch:#143d26; --pitch-2:#1b4f31; --on-pitch:#eef5ef; --gold:#e8b52a; --gold-ink:#2b2000;
+  --good:#4fb071; --soft-good:#1f3d29; --soft-good-ink:#a8dcb7; --zero:#223028; --zero-ink:#93a598; --danger:#e0705a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1611; --surface:#16211a; --line:#26352b; --fg:#e4ebe5; --muted:#93a598;
+  --pitch:#143d26; --pitch-2:#1b4f31; --on-pitch:#eef5ef; --gold:#e8b52a; --gold-ink:#2b2000;
+  --good:#4fb071; --soft-good:#1f3d29; --soft-good-ink:#a8dcb7; --zero:#223028; --zero-ink:#93a598; --danger:#e0705a; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.45}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--pitch)}
+.wrap{max-width:720px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{background:var(--pitch);color:var(--on-pitch);
+  background-image:repeating-linear-gradient(90deg,transparent 0 48px,rgba(255,255,255,.04) 48px 96px)}
+header.top .wrap{padding-block:18px 0}
+.brand{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1{font-family:var(--f-display);font-weight:800;font-size:30px;letter-spacing:.01em;margin:0;line-height:1;text-transform:uppercase;text-wrap:balance}
+h1 small{display:block;font-family:var(--f-body);font-weight:500;font-size:13px;text-transform:none;letter-spacing:0;opacity:.75;margin-top:6px}
+.me-chip{font-size:13px;opacity:.85}
+nav.tabs{display:flex;gap:2px;margin-top:16px;overflow-x:auto;scrollbar-width:none}
+nav.tabs button{font-family:var(--f-display);font-weight:700;font-size:16px;letter-spacing:.04em;text-transform:uppercase;
+  background:transparent;color:var(--on-pitch);opacity:.7;border:0;padding:10px 14px 12px;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
+nav.tabs button[aria-selected="true"]{opacity:1;border-bottom-color:var(--gold)}
+nav.tabs button:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+main .wrap{padding-block:18px 48px;display:grid;gap:16px}
+.mdbar{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.mdbar h2{font-family:var(--f-display);font-weight:700;font-size:22px;margin:0;text-transform:uppercase;letter-spacing:.03em}
+.iconbtn{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--fg);font-size:18px;cursor:pointer}
+.iconbtn:disabled{opacity:.35;cursor:default}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;padding:12px 14px;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.team{font-weight:600;min-width:0;overflow-wrap:break-word;hyphens:auto;-webkit-hyphens:auto}
+.team.home{text-align:right}
+.mid{display:grid;justify-items:center;gap:4px}
+.when{font-size:12px;color:var(--muted);grid-column:1/-1;text-align:center;margin-top:-4px;font-variant-numeric:tabular-nums}
+.score{display:flex;align-items:center;gap:6px}
+.score input{width:44px;height:44px;text-align:center;font-family:var(--f-display);font-weight:700;font-size:22px;
+  border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);-moz-appearance:textfield}
+.score input::-webkit-outer-spin-button,.score input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.score input:disabled{opacity:.6}
+.score .colon{font-family:var(--f-display);font-weight:700;font-size:20px;color:var(--muted)}
+.res{font-family:var(--f-display);font-weight:800;font-size:24px;background:var(--pitch);color:var(--on-pitch);padding:2px 10px;border-radius:6px;font-variant-numeric:tabular-nums;letter-spacing:.04em}
+.meta{display:flex;gap:6px;align-items:center;justify-content:center;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.pill{display:inline-block;font-family:var(--f-display);font-weight:700;font-size:13px;padding:1px 8px;border-radius:99px;letter-spacing:.03em;font-variant-numeric:tabular-nums}
+.p4{background:var(--gold);color:var(--gold-ink)} .p3{background:var(--good);color:#fff} .p2{background:var(--soft-good);color:var(--soft-good-ink)} .p0{background:var(--zero);color:var(--zero-ink)}
+.lock{font-size:12px;color:var(--muted)}
+.actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn{font-family:var(--f-display);font-weight:700;font-size:16px;letter-spacing:.05em;text-transform:uppercase;
+  background:var(--pitch-2);color:var(--on-pitch);border:0;border-radius:8px;padding:11px 18px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.btn.danger{background:transparent;color:var(--danger);border:1px solid var(--danger)}
+.btn:disabled{opacity:.5;cursor:default}
+.status{font-size:13px;color:var(--muted)}
+.field{display:grid;gap:4px;min-width:0}
+.field label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.field input,.field textarea{font:inherit;border:1px solid var(--line);border-radius:8px;padding:9px 10px;background:var(--bg);color:var(--fg);width:100%;min-width:0}
+.field textarea{min-height:140px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px}
+.box{padding:14px;display:grid;gap:12px}
+.box h3{margin:0;font-family:var(--f-display);font-size:19px;text-transform:uppercase;letter-spacing:.03em}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.empty{padding:28px 18px;text-align:center;color:var(--muted)}
+.empty strong{display:block;color:var(--fg);font-family:var(--f-display);font-size:20px;text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{padding:10px 12px;border-top:1px solid var(--line);text-align:left;white-space:nowrap}
+thead th{border-top:0;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;background:var(--bg)}
+td.num,th.num{text-align:right}
+td.rank{font-family:var(--f-display);font-weight:800;font-size:18px;width:36px}
+tr.mine td{background:var(--soft-good)}
+tr.mine td{color:var(--soft-good-ink)}
+td.total{font-family:var(--f-display);font-weight:800;font-size:20px}
+.matrix th.m{text-align:center;font-size:11px;line-height:1.2;white-space:normal;min-width:72px}
+.matrix td.c{text-align:center}
+.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--muted);align-items:center}
+.adminrow{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:10px 14px;border-top:1px solid var(--line)}
+.adminrow:first-child{border-top:0}
+.adminrow .t{min-width:0;font-weight:600;overflow-wrap:anywhere}
+.adminrow .t small{display:block;font-weight:400;color:var(--muted)}
+.mini{width:38px!important;height:38px!important;font-size:18px!important}
+.hint{font-size:13px;color:var(--muted);margin:0}
+.odds{display:flex;gap:4px;justify-content:center}
+.odd{font-size:12px;font-variant-numeric:tabular-nums;border:1px solid var(--line);border-radius:6px;padding:1px 6px;color:var(--muted);white-space:nowrap}
+.odd b{font-family:var(--f-display);font-weight:700;font-size:14px;color:var(--fg);margin-left:3px}
+.odd.on{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 18%,transparent)}
+.rules{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+.rules b{color:var(--fg)}
+.adm2{display:flex;gap:8px;align-items:center;flex-wrap:wrap;grid-column:1/-1}
+.adm2 input{font:inherit;font-size:13px;border:1px solid var(--line);border-radius:6px;padding:5px 6px;background:var(--bg);color:var(--fg)}
+.adm2 input.q{width:58px;text-align:center}
+.adm2 label{font-size:12px;color:var(--muted)}
+footer.src{font-size:12px;color:var(--muted)}
+footer.src a{color:inherit}
+@media (max-width:440px){.adminrow{grid-template-columns:1fr auto}.adminrow .del{grid-column:1/-1;justify-self:start}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.seg{display:flex;gap:4px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:4px}
+.seg button{flex:1;font-family:var(--f-display);font-weight:700;font-size:16px;letter-spacing:.04em;text-transform:uppercase;border:0;border-radius:7px;padding:9px;background:transparent;color:var(--muted);cursor:pointer}
+.seg button[aria-selected="true"]{background:var(--pitch-2);color:var(--on-pitch)}
+.banner{padding:14px;border-color:var(--gold);background:color-mix(in srgb,var(--gold) 14%,var(--surface))}
+.linkbtn{background:none;border:0;color:inherit;text-decoration:underline;font:inherit;cursor:pointer;padding:0}
+.btn.sm{padding:7px 12px;font-size:14px}
+.adminrow .actions{justify-content:flex-end}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <h1>Kreisliga D Tipprunde<small>Kreis Lippstadt · Saison 2026/27</small></h1>
+      <span class="me-chip" id="meChip"></span>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button role="tab" id="tab-tipp" aria-selected="true" data-tab="tipp">Tippabgabe</button>
+      <button role="tab" id="tab-tabelle" aria-selected="false" data-tab="tabelle">Tabelle</button>
+      <button role="tab" id="tab-uebersicht" aria-selected="false" data-tab="uebersicht">Tippübersicht</button>
+      <button role="tab" id="tab-regeln" aria-selected="false" data-tab="regeln">Regeln</button>
+      <button role="tab" id="tab-admin" aria-selected="false" data-tab="admin" hidden>Verwaltung</button>
+    </nav>
+  </div>
+</header>
+<main><div class="wrap" id="view"></div></main>
+<script>
+// Diese zwei Werte aus Supabase eintragen: Project Settings -> API
+// Der "publishable" bzw. "anon" Schlüssel ist öffentlich und darf hier stehen.
+// Den "secret" bzw. "service_role" Schlüssel NIEMALS hier eintragen.
+window.TIPPRUNDE_CONFIG = {
+  supabaseUrl: "https://vdprbxspdvsmutzajnin.supabase.co",
+  supabaseKey: "sb_publishable_jKQYu7Qpat_VfFgylNnjkQ_xsw1qk9J",
+  fussballDeUrl: "https://www.fussball.de/spieltag/kreisliga-d-lippstadt-kreis-lippstadt-kreisliga-d-herren-saison2627-westfalen/-/staffel/031H01QQ6C000004VS5489BTVVG7L386-G"
+};
+</script>
+<script>
+(() => {
+const CFG = window.TIPPRUNDE_CONFIG || {};
+const API = (CFG.supabaseUrl||'').replace(/\/$/,'') + '/rest/v1';
+const KEY = CFG.supabaseKey||'';
+const HDR = {'apikey':KEY,'Content-Type':'application/json'};
+if(KEY.startsWith('eyJ')) HDR.Authorization='Bearer '+KEY;
+
+const S = {tab:'tipp', md:null, matches:[], tips:{}, tables:{}, players:{}, me:null, token:null,
+  loaded:false, loadError:'', draft:{}, status:'', confirmDel:null, adm:{}, admPlayers:[], authMode:'login', authMsg:''};
+try{ S.token=localStorage.getItem('kl-token'); const t=localStorage.getItem('kl-tab'); if(t) S.tab=t; }catch(e){}
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const WD=['So','Mo','Di','Mi','Do','Fr','Sa'];
+const p2=n=>String(n).padStart(2,'0');
+function fmt(m){ if(!m.kickoff) return 'Termin offen'; const d=new Date(m.kickoff); if(isNaN(d)) return 'Termin offen';
+  return `${WD[d.getDay()]} ${p2(d.getDate())}.${p2(d.getMonth()+1)}. · Tippschluss ${p2(d.getHours())}:${p2(d.getMinutes())} Uhr`; }
+const toLocalInput = iso => { if(!iso) return ''; const d=new Date(iso); return `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}T${p2(d.getHours())}:${p2(d.getMinutes())}`; };
+const started = m => m.kickoff && new Date(m.kickoff) <= new Date();
+const hasRes = m => Number.isInteger(m.hg) && Number.isInteger(m.ag);
+const fmtP = n => String(Math.round(n*10)/10).replace('.',',');
+const fmtQ = n => Number(n).toFixed(2).replace('.',',');
+const approved = () => S.me && S.me.status==='approved';
+const isAdmin = () => S.me && S.me.is_admin;
+
+// ---- Server ----
+async function rpc(fn,args){
+  const r=await fetch(`${API}/rpc/${fn}`,{method:'POST',headers:HDR,body:JSON.stringify(args||{})});
+  const j=await r.json().catch(()=>null);
+  if(!r.ok) throw new Error((j&&j.message)||`Serverfehler ${r.status}`);
+  return j;
+}
+async function sel(path){
+  const r=await fetch(`${API}/${path}`,{headers:HDR});
+  const j=await r.json().catch(()=>null);
+  if(!r.ok) throw new Error((j&&j.message)||`Serverfehler ${r.status}`);
+  return j;
+}
+async function loadAll(){
+  try{
+    const [matches,snaps,players,tips,me]=await Promise.all([
+      sel('matches?select=*&order=md,kickoff'), sel('snapshots?select=*'), rpc('public_players'),
+      rpc('get_tips',{p_token:S.token||null}), S.token? rpc('me',{p_token:S.token}) : Promise.resolve(null)]);
+    S.matches=matches; S.tables={}; snaps.forEach(s=>S.tables[s.id]=s.data);
+    S.players={}; players.forEach(p=>S.players[p.id]=p.name);
+    S.tips={}; tips.forEach(t=>{ (S.tips[t.player_id] ||= {t:{}}).t[t.match_id]=[t.h,t.a]; });
+    if(S.token && !me){ S.token=null; try{localStorage.removeItem('kl-token')}catch(e){} }
+    S.me=me; S.loaded=true; S.loadError='';
+    if(isAdmin()) S.admPlayers=await rpc('admin_players',{p_token:S.token});
+  }catch(e){ S.loadError=e.message; S.loaded=true; }
+  render();
+}
+
+// ---- Quoten: Poisson-Modell aus der Tabelle vor dem Spieltag ----
+function tableFor(md){
+  // Tabelle, die vor diesem Spieltag festgehalten wurde; sonst die aktuelle
+  return S.tables[String(md)] || S.tables.latest || null;
+}
+function pois(l,k){ let p=Math.exp(-l); for(let i=1;i<=k;i++) p*=l/i; return p; }
+function autoOdds(m){
+  const t=tableFor(m.md); const rows=t&&t.rows; if(!rows||!rows.length) return null;
+  const H=rows.find(r=>r.team===m.home), A=rows.find(r=>r.team===m.away); if(!H||!A) return null;
+  const GP=rows.reduce((s,r)=>s+r.gp,0), GF=rows.reduce((s,r)=>s+r.gf,0); if(!GP) return null;
+  const mu=GF/GP, k=3;
+  const att=r=>((r.gf+k*mu)/(r.gp+k))/mu, def=r=>((r.ga+k*mu)/(r.gp+k))/mu;
+  const lh=Math.max(.2,mu*att(H)*def(A)*1.1), la=Math.max(.2,mu*att(A)*def(H)/1.1);
+  let ph=0,pd=0,pa=0;
+  for(let i=0;i<=15;i++) for(let j=0;j<=15;j++){ const p=pois(lh,i)*pois(la,j); if(i>j) ph+=p; else if(i===j) pd+=p; else pa+=p; }
+  const s=ph+pd+pa;
+  const o=p=>Math.min(15,Math.max(1.05,Math.round(100/((p/s)*1.07))/100));
+  return {h:o(ph),d:o(pd),a:o(pa)};
+}
+const odds = m => (m.q && m.q.h && m.q.d && m.q.a) ? m.q : autoOdds(m);
+
+// Punkte nach Kicktipp: Ergebnis 4, Tordifferenz 3 (nicht bei Remis), Tendenz 2
+function evalTip(tip, m){
+  if(!tip || !hasRes(m)) return null;
+  const [h,a]=tip;
+  const td=Math.sign(h-a), rd=Math.sign(m.hg-m.ag);
+  if(h===m.hg && a===m.ag) return {p:4,c:4};
+  if(td!==rd) return {p:0,c:0};
+  if(rd!==0 && h-a===m.hg-m.ag) return {p:3,c:3};
+  return {p:2,c:2};
+}
+const pill = r => r==null ? '' : `<span class="pill p${r.c}">${fmtP(r.p)} P</span>`;
+
+function matchdays(){ return [...new Set(S.matches.map(m=>m.md))].sort((a,b)=>a-b); }
+function currentMd(){
+  const mds=matchdays(); if(!mds.length) return null;
+  for(const md of mds){ if(S.matches.some(m=>m.md===md && !hasRes(m))) return md; }
+  return mds[mds.length-1];
+}
+function mdMatches(md){ return S.matches.filter(m=>m.md===md).sort((a,b)=>(a.kickoff||'~').localeCompare(b.kickoff||'~')||a.home.localeCompare(b.home)); }
+const nameOf = id => S.players[id] || 'Tipper';
+
+function mdBar(){
+  const mds=matchdays(), i=mds.indexOf(S.md);
+  return `<div class="mdbar">
+    <button class="iconbtn" id="mdPrev" aria-label="Vorheriger Spieltag" ${i<=0?'disabled':''}>‹</button>
+    <h2>${S.md!=null?S.md+'. Spieltag':'Spieltag'}</h2>
+    <button class="iconbtn" id="mdNext" aria-label="Nächster Spieltag" ${i<0||i>=mds.length-1?'disabled':''}>›</button></div>`;
+}
+function emptyState(){
+  if(!S.loaded) return `<div class="panel empty"><strong>Wird geladen</strong>Einen Moment.</div>`;
+  if(S.loadError) return `<div class="panel empty"><strong>Keine Verbindung</strong>${esc(S.loadError)}</div>`;
+  return `<div class="panel empty"><strong>Noch keine Spiele</strong>Der Spielplan wird automatisch von fussball.de übernommen.</div>`;
+}
+function oddsChips(m, tip){
+  const q=odds(m); if(!q) return '';
+  const t = tip && Number.isInteger(tip[0]) && Number.isInteger(tip[1]) ? Math.sign(tip[0]-tip[1]) : null;
+  const c=(lab,v,s)=>`<span class="odd ${t===s?'on':''}">${lab}<b>${fmtQ(v)}</b></span>`;
+  return `<div class="odds">${c('1',q.h,1)}${c('X',q.d,0)}${c('2',q.a,-1)}</div>`;
+}
+
+// ---- Anmeldung ----
+function authBox(){
+  const reg=S.authMode==='register';
+  return `<div class="panel box auth">
+    <div class="seg" role="tablist">
+      <button id="authLogin" aria-selected="${!reg}">Anmelden</button>
+      <button id="authRegister" aria-selected="${reg}">Neu registrieren</button>
+    </div>
+    <form id="authForm" class="grid2" autocomplete="on">
+      <div class="field"><label for="authName">Tippname</label><input id="authName" name="username" autocomplete="username" maxlength="24" required></div>
+      <div class="field"><label for="authPin">PIN (4 bis 8 Ziffern)</label><input id="authPin" name="password" type="password" inputmode="numeric" pattern="[0-9]*" autocomplete="${reg?'new-password':'current-password'}" maxlength="8" required></div>
+      <div class="actions" style="grid-column:1/-1"><button class="btn" type="submit">${reg?'Registrieren':'Anmelden'}</button><span class="status" id="authStatus">${esc(S.authMsg)}</span></div>
+    </form>
+    <p class="hint">${reg?'Nach der Registrierung schaltet dich der Tippspielleiter frei. Merk dir deine PIN gut.':'PIN vergessen? Der Tippspielleiter kann sie zurücksetzen.'}</p>
+  </div>`;
+}
+
+function viewTipp(){
+  if(!S.me) return authBox() + (S.matches.length? `${mdBar()}<div class="panel">${tipRows(true)}</div>` : emptyState());
+  if(!S.matches.length) return emptyState();
+  const pending = S.me.status!=='approved';
+  return `${pending?`<div class="panel banner">Du bist registriert als <b>${esc(S.me.name)}</b>. Sobald der Tippspielleiter dich freischaltet, kannst du tippen.</div>`:''}
+  ${mdBar()}
+  <div class="panel">${tipRows(pending)}</div>
+  ${pending?'':`<div class="actions"><span class="status" id="status">${esc(S.status||'Tipps werden automatisch gespeichert')}</span></div>`}`;
+}
+function tipRows(readOnly){
+  const mine=(S.me&&S.tips[S.me.id]&&S.tips[S.me.id].t)||{};
+  return mdMatches(S.md).map(m=>{
+    const lock=readOnly||started(m);
+    const d=S.draft[m.id] || mine[m.id] || [null,null];
+    const v=x=>Number.isInteger(x)?x:'';
+    const r=evalTip(mine[m.id],m);
+    return `<div class="row">
+      <div class="team home">${esc(m.home)}</div>
+      <div class="mid">
+        <div class="score">
+          <input id="h-${m.id}" data-m="${m.id}" data-s="0" type="number" inputmode="numeric" min="0" max="30" value="${v(d[0])}" ${lock?'disabled':''} aria-label="Tore ${esc(m.home)}">
+          <span class="colon">:</span>
+          <input id="a-${m.id}" data-m="${m.id}" data-s="1" type="number" inputmode="numeric" min="0" max="30" value="${v(d[1])}" ${lock?'disabled':''} aria-label="Tore ${esc(m.away)}">
+        </div>
+        ${oddsChips(m,d)}
+        <div class="meta">${hasRes(m)?`Ergebnis <span class="res" style="font-size:16px;padding:0 7px">${m.hg}:${m.ag}</span>`:''}${pill(r)}${started(m)&&!hasRes(m)?'<span class="lock">gesperrt, Ergebnis folgt</span>':''}</div>
+      </div>
+      <div class="team">${esc(m.away)}</div>
+      <div class="when">${fmt(m)}</div>
+    </div>`;}).join('');
+}
+
+function viewRegeln(){
+  const sec=(h,items)=>`<div class="panel box"><h3>${h}</h3><div class="rules">${items.map(i=>`<span>${i}</span>`).join('')}</div></div>`;
+  return sec('Punkte',[
+      '<b>4 Punkte</b> für das genaue Ergebnis',
+      '<b>3 Punkte</b> für die richtige Tordifferenz, z. B. 2:0 getippt, 3:1 gespielt',
+      '<b>2 Punkte</b> für die richtige Tendenz (Heimsieg, Remis, Auswärtssieg)',
+      'Bei Remis gibt es keine Tordifferenz-Punkte: 1:1 getippt, 2:2 gespielt = 2 Punkte',
+      'Bei Punktgleichheit in der Tabelle entscheidet die Zahl der Volltreffer'])
+    + sec('Tippschluss',[
+      'Getippt und geändert werden kann bis zum Tippschluss, der unter jedem Spiel steht',
+      'Ist die Anstoßzeit eines Spiels bekannt, ist Tippschluss beim Anpfiff',
+      'Sonst ist Tippschluss am Spieltags-Sonntag um 12:00 Uhr',
+      'Die Tipps der anderen siehst du in der Tippübersicht erst ab Tippschluss'])
+    + sec('Quoten',[
+      'Die Quoten (1 · X · 2) zeigen nur, wer Favorit ist, und zählen nicht für die Punkte',
+      'Sie werden vor jedem Spieltag aus der aktuellen Tabelle berechnet'])
+    + sec('Mitmachen',[
+      'Registrieren mit Tippname und PIN, danach schaltet dich der Tippspielleiter frei',
+      'Spielplan und Ergebnisse kommen automatisch von fussball.de, meist Sonntag- oder Montagabend']);
+}
+
+function standings(){
+  return Object.keys(S.players).map(uid=>{
+    const t=(S.tips[uid]&&S.tips[uid].t)||{}; let total=0, exact=0, md=0, n=0;
+    for(const m of S.matches){ const r=evalTip(t[m.id],m); if(!r) continue; n++; total+=r.p; if(r.c===4) exact++; if(m.md===S.md) md+=r.p; }
+    return {uid,total,exact,md,n};
+  }).sort((a,b)=>b.total-a.total||b.exact-a.exact||nameOf(a.uid).localeCompare(nameOf(b.uid)));
+}
+function viewTabelle(){
+  if(!S.matches.length) return emptyState();
+  const st=standings();
+  if(!st.length) return `${mdBar()}<div class="panel empty"><strong>Noch keine Tipper</strong>Sobald jemand freigeschaltet ist, steht er hier.</div>`;
+  let rank=0, prev=null;
+  const rows=st.map((r,i)=>{ if(prev===null||r.total!==prev.total||r.exact!==prev.exact) rank=i+1; prev=r;
+    return `<tr class="${S.me&&r.uid===S.me.id?'mine':''}"><td class="rank">${rank}.</td><td>${esc(nameOf(r.uid))}</td>
+      <td class="num">${fmtP(r.md)}</td><td class="num">${r.exact}</td><td class="num total">${fmtP(r.total)}</td></tr>`;}).join('');
+  return `${mdBar()}<div class="panel scroll"><table>
+    <thead><tr><th>Pl.</th><th>Tipper</th><th class="num">${S.md}. ST</th><th class="num">Volltr.</th><th class="num">Gesamt</th></tr></thead>
+    <tbody>${rows}</tbody></table></div>`;
+}
+function short(n){ n=String(n).replace(/\s*\(9er\)/,''); return n.length>14? n.slice(0,13)+'.' : n; }
+function viewUebersicht(){
+  if(!S.matches.length) return emptyState();
+  const ms=mdMatches(S.md), ids=standings().map(r=>r.uid);
+  if(!ids.length) return `${mdBar()}<div class="panel empty"><strong>Noch keine Tipper</strong></div>`;
+  const head=ms.map(m=>`<th class="m">${esc(short(m.home))}<br>–<br>${esc(short(m.away))}<br>${hasRes(m)?`<span class="res" style="font-size:14px;padding:0 6px">${m.hg}:${m.ag}</span>`:''}</th>`).join('');
+  const rows=ids.map(uid=>{
+    const t=(S.tips[uid]&&S.tips[uid].t)||{}; let sum=0;
+    const cells=ms.map(m=>{ const tip=t[m.id];
+      if(!tip) return `<td class="c">${started(m)||(S.me&&uid===S.me.id)?'–':'<span class="lock">verdeckt</span>'}</td>`;
+      const r=evalTip(tip,m); if(r) sum+=r.p;
+      return `<td class="c">${tip[0]}:${tip[1]}${r?`<br>${pill(r)}`:''}</td>`;}).join('');
+    return `<tr class="${S.me&&uid===S.me.id?'mine':''}"><td>${esc(nameOf(uid))}</td>${cells}<td class="num total">${fmtP(sum)}</td></tr>`;}).join('');
+  return `${mdBar()}<div class="panel scroll"><table class="matrix"><thead><tr><th>Tipper</th>${head}<th class="num">Pkt</th></tr></thead><tbody>${rows}</tbody></table></div>
+  <div class="legend"><span class="pill p4">Ergebnis</span><span class="pill p3">Tordifferenz</span><span class="pill p2">Tendenz</span><span class="pill p0">daneben</span></div>
+  <p class="hint">Tipps der anderen werden ab Tippschluss sichtbar.</p>`;
+}
+
+function viewAdmin(){
+  if(!isAdmin()) return `<div class="panel empty"><strong>Nur für den Tippspielleiter</strong></div>`;
+  const pend=S.admPlayers.filter(p=>p.status==='pending'), appr=S.admPlayers.filter(p=>p.status==='approved'), rej=S.admPlayers.filter(p=>p.status==='rejected');
+  const prow=(p,btns)=>`<div class="adminrow"><div class="t">${esc(p.name)}${p.is_admin?' <small>Tippspielleiter</small>':''}</div><div class="actions">${btns}</div></div>`;
+  const b=(act,id,label,cls='ghost')=>`<button class="btn ${cls} sm" data-pact="${act}" data-pid="${id}">${label}</button>`;
+  const players = `<div class="panel box"><h3>Anfragen${pend.length?` (${pend.length})`:''}</h3>
+      ${pend.length? `<div class="panel">${pend.map(p=>prow(p,b('approved',p.id,'Annehmen','')+b('rejected',p.id,'Ablehnen'))).join('')}</div>` : '<p class="hint">Keine offenen Anfragen.</p>'}
+    </div>
+    <div class="panel box"><h3>Tipper (${appr.length})</h3>
+      <div class="panel">${appr.map(p=>prow(p, p.is_admin?'':(b('pin',p.id,'PIN neu')+(S.confirmDel==='p'+p.id?b('delete',p.id,'Wirklich entfernen','danger'):b('askdel',p.id,'Entfernen'))))).join('')}</div>
+      ${rej.length?`<p class="hint">Abgelehnt: ${rej.map(p=>`${esc(p.name)} ${b('approved',p.id,'doch annehmen')}`).join(' ')}</p>`:''}
+      <div class="actions"><span class="status" id="plStatus"></span></div>
+    </div>`;
+  if(!S.matches.length) return players;
+  const list = mdMatches(S.md).map(m=>{
+    const a=S.adm[m.id]||{}; const v=x=>Number.isInteger(x)?x:'';
+    const hg='hg' in a?a.hg:m.hg, ag='ag' in a?a.ag:m.ag;
+    const auto=autoOdds(m)||{}; const q=a.q||m.q||{};
+    const qv=k=>q[k]!=null?q[k]:'';
+    return `<div class="adminrow"><div class="t">${esc(m.home)} – ${esc(m.away)}<small>${fmt(m)}${m.q?' · Quoten manuell':''}</small></div>
+      <div class="score"><input class="mini" id="rh-${m.id}" data-a="${m.id}" data-f="hg" type="number" min="0" inputmode="numeric" value="${v(hg)}" aria-label="Ergebnis Heim">
+      <span class="colon">:</span><input class="mini" id="ra-${m.id}" data-a="${m.id}" data-f="ag" type="number" min="0" inputmode="numeric" value="${v(ag)}" aria-label="Ergebnis Gast"></div>
+      <span></span>
+      <div class="adm2">
+        <label for="qh-${m.id}">1</label><input class="q" id="qh-${m.id}" data-a="${m.id}" data-f="qh" inputmode="decimal" placeholder="${auto.h?fmtQ(auto.h):''}" value="${qv('h')}">
+        <label for="qd-${m.id}">X</label><input class="q" id="qd-${m.id}" data-a="${m.id}" data-f="qd" inputmode="decimal" placeholder="${auto.d?fmtQ(auto.d):''}" value="${qv('d')}">
+        <label for="qa-${m.id}">2</label><input class="q" id="qa-${m.id}" data-a="${m.id}" data-f="qa" inputmode="decimal" placeholder="${auto.a?fmtQ(auto.a):''}" value="${qv('a')}">
+        <input id="ko-${m.id}" data-a="${m.id}" data-f="ko" type="datetime-local" value="${toLocalInput(a.ko||m.kickoff)}" aria-label="Anstoß">
+      </div></div>`;}).join('');
+  return players + `${mdBar()}
+  <div class="panel">${list}</div>
+  <div class="actions"><button class="btn" id="saveAdm">Spiele speichern</button><span class="status" id="admStatus"></span></div>
+  <p class="hint">Ergebnisse kommen automatisch aus der fussball.de-Tabelle; was nicht eindeutig ist, trägst du hier ein. Leere Quotenfelder = automatische Quote. Ein geänderter Anstoß wird beim Abgleich nicht mehr überschrieben.</p>`;
+}
+
+function render(){
+  if(S.md==null || !matchdays().includes(S.md)) S.md=currentMd();
+  if(S.tab==='admin' && !isAdmin()) S.tab='tipp';
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.setAttribute('aria-selected', String(b.dataset.tab===S.tab)));
+  $('#tab-admin').hidden=!isAdmin();
+  const pend=S.admPlayers.filter(p=>p.status==='pending').length;
+  $('#tab-admin').textContent = pend? `Verwaltung (${pend})` : 'Verwaltung';
+  const act=document.activeElement, focusId=act&&act.id, selS=act&&act.selectionStart, selE=act&&act.selectionEnd;
+  const keep={}; ['authName','authPin'].forEach(id=>{ const el=document.getElementById(id); if(el) keep[id]=el.value; });
+  const v=({tipp:viewTipp,tabelle:viewTabelle,uebersicht:viewUebersicht,regeln:viewRegeln,admin:viewAdmin}[S.tab]||viewTipp)();
+  const up=S.tables.latest&&S.tables.latest.updated;
+  $('#view').innerHTML=v+`<footer class="src">Spielplan und Tabelle: <a href="${esc(CFG.fussballDeUrl||'https://www.fussball.de')}" target="_blank" rel="noopener">fussball.de</a>${up?` · zuletzt abgeglichen ${esc(new Date(up).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}))} Uhr`:''}</footer>`;
+  Object.entries(keep).forEach(([id,val])=>{ const el=document.getElementById(id); if(el) el.value=val; });
+  if(focusId){ const el=document.getElementById(focusId); if(el && el!==act){ el.focus({preventScroll:true}); try{ if(selS!=null) el.setSelectionRange(selS,selE); }catch(e){} } }
+  $('#meChip').innerHTML = S.me ? `${esc(S.me.name)} · <button class="linkbtn" id="logout">Abmelden</button>` : '';
+}
+
+// ---- Events ----
+document.querySelector('nav.tabs').addEventListener('click',e=>{const b=e.target.closest('button[data-tab]'); if(!b) return;
+  S.tab=b.dataset.tab; S.confirmDel=null; try{localStorage.setItem('kl-tab',S.tab)}catch(e){} render();});
+document.addEventListener('submit',async e=>{
+  if(e.target.id!=='authForm') return; e.preventDefault();
+  const name=$('#authName').value.trim(), pin=$('#authPin').value.trim();
+  setStatus('authStatus', S.authMode==='register'?'Registriere …':'Melde an …');
+  try{
+    const r=await rpc(S.authMode==='register'?'register':'login',{p_name:name,p_pin:pin});
+    if(r&&r.error) throw new Error(r.error);
+    S.token=r.token; try{localStorage.setItem('kl-token',S.token)}catch(e){}
+    S.authMsg=''; await loadAll();
+  }catch(err){ S.authMsg=err.message; setStatus('authStatus',err.message); }
+});
+document.addEventListener('click',async e=>{
+  const id=e.target.id;
+  if(id==='authLogin'||id==='authRegister'){ S.authMode=id==='authLogin'?'login':'register'; S.authMsg=''; render(); return; }
+  if(id==='logout'){ try{ await rpc('logout',{p_token:S.token}); }catch(err){} S.token=null; S.me=null; S.admPlayers=[]; try{localStorage.removeItem('kl-token')}catch(e){} loadAll(); return; }
+  if(id==='mdPrev'||id==='mdNext'){ const mds=matchdays(), i=mds.indexOf(S.md); S.md=mds[i+(id==='mdPrev'?-1:1)]; S.confirmDel=null; render(); return; }
+  if(id==='saveAdm') return saveAdm();
+  const pb=e.target.closest('[data-pact]');
+  if(pb){ const act=pb.dataset.pact, pid=pb.dataset.pid;
+    if(act==='askdel'){ S.confirmDel='p'+pid; render(); return; }
+    if(act==='pin'){ S.pinFor=pid; const pin=String(Math.floor(1000+Math.random()*9000));
+      try{ await rpc('admin_reset_pin',{p_token:S.token,p_player:pid,p_pin:pin}); setStatus('plStatus',`Neue PIN für ${S.admPlayers.find(p=>p.id===pid).name}: ${pin} (jetzt weitergeben, sie wird nicht nochmal angezeigt)`); }
+      catch(err){ setStatus('plStatus',err.message); } return; }
+    try{ await rpc('admin_set_status',{p_token:S.token,p_player:pid,p_status:act}); S.confirmDel=null; await loadAll(); }
+    catch(err){ setStatus('plStatus',err.message); }
+  }
+});
+document.addEventListener('input',e=>{
+  const t=e.target;
+  if(t.dataset.m){ const mid=t.dataset.m, s=+t.dataset.s;
+    const mine=(S.tips[S.me.id]&&S.tips[S.me.id].t||{})[mid]||[null,null];
+    const cur=S.draft[mid]||[...mine]; const n=t.value===''?null:Math.max(0,Math.min(30,parseInt(t.value,10)));
+    cur[s]=Number.isInteger(n)?n:null; S.draft[mid]=cur;
+    const both=Number.isInteger(cur[0])&&Number.isInteger(cur[1]), none=cur[0]==null&&cur[1]==null;
+    if(both||none){ S.dirty=S.dirty||new Set(); S.dirty.add(mid); setStatus('status','Speichere …'); scheduleSave(); }
+    else setStatus('status','Bitte beide Tore eintragen');
+  }
+  if(t.dataset.a){ const mid=t.dataset.a, f=t.dataset.f; const a=S.adm[mid]||(S.adm[mid]={});
+    if(f==='hg'||f==='ag'){ const n=t.value===''?null:parseInt(t.value,10); a[f]=Number.isInteger(n)&&n>=0?n:null; }
+    else if(f==='ko'){ a.ko=t.value||null; }
+    else { const m=S.matches.find(x=>x.id===mid); a.q=a.q||{...(m.q||{})}; const n=parseFloat(t.value.replace(',','.')); a.q[f.slice(1)]= n>=1.01 ? Math.round(n*100)/100 : null; }
+  }
+});
+function setStatus(id,msg){ const el=document.getElementById(id); if(el) el.textContent=msg; if(id==='status') S.status=msg; }
+
+let saveTimer=null, saving=false;
+function scheduleSave(){ clearTimeout(saveTimer); saveTimer=setTimeout(saveTips,700); }
+async function saveTips(){
+  if(saving){ scheduleSave(); return; }
+  if(!S.dirty||!S.dirty.size) return;
+  saving=true; const ids=[...S.dirty]; S.dirty.clear(); let err=null;
+  for(const mid of ids){
+    const v=S.draft[mid]; if(!v) continue; const sent=JSON.stringify(v);
+    try{
+      await rpc('save_tip',{p_token:S.token,p_match:mid,p_h:v[0],p_a:v[1]});
+      const t=(S.tips[S.me.id] ||= {t:{}}).t;
+      if(v[0]==null) delete t[mid]; else t[mid]=[v[0],v[1]];
+      if(JSON.stringify(S.draft[mid])===sent) delete S.draft[mid];
+    }catch(e){ err=e; }
+  }
+  saving=false;
+  setStatus('status', err ? `Nicht gespeichert: ${err.message}` : 'Alle Tipps gespeichert');
+}
+async function saveAdm(){
+  const ids=Object.keys(S.adm); if(!ids.length){ setStatus('admStatus','Keine Änderungen.'); return; }
+  setStatus('admStatus','Speichere …');
+  try{
+    for(const mid of ids){ const a=S.adm[mid], patch={};
+      if('hg' in a) patch.hg=a.hg; if('ag' in a) patch.ag=a.ag;
+      if('ko' in a && a.ko) patch.kickoff=new Date(a.ko).toISOString();
+      if(a.q){ const q=a.q; patch.q = (q.h&&q.d&&q.a) ? {h:q.h,d:q.d,a:q.a} : null; }
+      await rpc('admin_update_match',{p_token:S.token,p_id:mid,p_patch:patch});
+    }
+    S.adm={}; await loadAll(); setStatus('admStatus','Gespeichert');
+  }catch(err){ setStatus('admStatus',`Nicht gespeichert: ${err.message}`); }
+}
+
+// ---- Start ----
+render();
+if(!CFG.supabaseUrl || !KEY){ S.loaded=true; S.loadError='Die Datei config.js ist noch nicht ausgefüllt.'; render(); }
+else { loadAll(); setInterval(()=>{ if(!document.hidden && !saving && !Object.keys(S.adm).length) loadAll(); }, 120000); }
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden && S.loaded && CFG.supabaseUrl) loadAll(); });
+})();
+</script>
+</body>
+</html>

@@ -24,6 +24,8 @@ MD_URL = BASE + "/spieltag/kreisliga-d-lippstadt-kreis-lippstadt-kreisliga-d-her
 TEAM_URL = f"{BASE}/mannschaft/sw-overhagen-ii-sv-sw-overhagen-westfalen/-/saison/2627/team-id/011MIANKAS000000VTVG0001VTR8C1K7"
 REF_TEAM = "SW Overhagen II"
 MAX_MD = 34
+SEASON_START = datetime(2026, 7, 1, tzinfo=BERLIN)
+SEASON_END = datetime(2027, 6, 30, 23, 59, tzinfo=BERLIN)
 DEFAULT_LOCK = (12, 0)  # Tippschluss, wenn die Anstoßzeit unbekannt ist
 
 SB_URL = os.environ.get("SUPABASE_URL", "").rstrip("/")
@@ -120,7 +122,9 @@ def parse_team_games(html):
             y, mo, d, hh, mi = last_date
             has_time = hh is not None
             dt = datetime(y, mo, d, int(hh) if has_time else DEFAULT_LOCK[0], int(mi) if has_time else DEFAULT_LOCK[1], tzinfo=BERLIN)
-            out.append((dt, has_time, names[0], names[1]))
+            # Die Teamseite zeigt auch Spiele früherer Saisons: nur diese Saison zählt
+            if SEASON_START <= dt <= SEASON_END:
+                out.append((dt, has_time, names[0], names[1]))
     return out
 
 
@@ -210,9 +214,16 @@ def parse_ts(s):
 
 
 def sunday_for(md, pairs, team_games, known_sundays):
-    for dt, has_time, h, a in team_games:
-        if (h, a) in pairs:
-            return dt.date(), (h, a, dt, has_time)
+    # Gleiche Paarung kann in Hin- und Rückrunde vorkommen (Heimrecht getauscht, aber sicher ist sicher):
+    # nimm den Termin, der am besten zum erwarteten Spieltagsdatum passt
+    prev = [k for k in known_sundays if k < md]
+    expected = known_sundays[max(prev)] + timedelta(days=7 * (md - max(prev))) if prev else None
+    cands = [g for g in team_games if (g[2], g[3]) in pairs]
+    if cands:
+        if expected:
+            cands.sort(key=lambda g: abs((g[0].date() - expected).days))
+        dt, has_time, h, a = cands[0]
+        return dt.date(), (h, a, dt, has_time)
     prev = [k for k in known_sundays if k < md]
     nxt = [k for k in known_sundays if k > md]
     if prev:
@@ -278,9 +289,12 @@ def main():
     for m in matches:
         if REF_TEAM not in (m["home"], m["away"]) or m.get("ko_manual") or m.get("hg") is not None:
             continue
+        cur = parse_ts(m.get("kickoff"))
         for dt, has_time, h, a in team_games:
             if (h, a) == (m["home"], m["away"]) and has_time:
-                cur = parse_ts(m.get("kickoff"))
+                # nur Verlegungen um höchstens drei Wochen übernehmen, nie einen Termin aus der anderen Halbserie
+                if cur and abs((cur - dt).days) > 21:
+                    continue
                 if not cur or abs((cur - dt).total_seconds()) > 60:
                     sb_patch("matches", m["id"], {"kickoff": dt.isoformat(), "ko_exact": True})
                     log(f"Neuer Termin {h} – {a}: {dt:%d.%m. %H:%M}")

@@ -1,0 +1,27 @@
+name: Abgleich fussball.de
+
+on:
+  schedule:
+    # So, Mo und Do um 19:57 UTC (21:57 Sommerzeit / 20:57 Winterzeit)
+    - cron: "57 19 * * 0,1,4"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Nur testen, nichts speichern"
+        type: boolean
+        default: false
+
+jobs:
+  abgleich:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests==2.32.3 beautifulsoup4==4.12.3
+      - run: python sync.py
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}

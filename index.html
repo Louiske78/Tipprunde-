@@ -123,6 +123,21 @@ footer.src a{color:inherit}
 .linkbtn{background:none;border:0;color:inherit;text-decoration:underline;font:inherit;cursor:pointer;padding:0}
 .btn.sm{padding:7px 12px;font-size:14px}
 .adminrow .actions{justify-content:flex-end}
+.resrow{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;padding:10px 14px;border-top:1px solid var(--line)}
+.resrow:first-child{border-top:0}
+.resrow .t{min-width:0;font-weight:600;overflow-wrap:break-word;hyphens:auto;-webkit-hyphens:auto}
+.resrow .t.h{text-align:right}
+.resrow.mine{background:var(--soft-good);color:var(--soft-good-ink)}
+.res.open{background:var(--zero);color:var(--zero-ink)}
+.sec-h{font-family:var(--f-display);font-weight:700;font-size:20px;text-transform:uppercase;letter-spacing:.03em;margin:4px 0 0}
+table.liga th,table.liga td{padding:9px 5px}
+table.liga th{letter-spacing:.02em}
+table.liga th:first-child,table.liga td:first-child{padding-left:12px}
+table.liga th:last-child,table.liga td:last-child{padding-right:12px}
+table.liga td.rank{font-size:16px;width:auto}
+table.liga td.team-cell{white-space:normal;overflow-wrap:anywhere;hyphens:auto;-webkit-hyphens:auto;width:100%;font-size:14px}
+table.liga td.num{font-size:14px}
+table.liga td.total{font-size:18px}
 </style>
 </head>
 <body>
@@ -134,7 +149,8 @@ footer.src a{color:inherit}
     </div>
     <nav class="tabs" role="tablist">
       <button role="tab" id="tab-tipp" aria-selected="true" data-tab="tipp">Tippabgabe</button>
-      <button role="tab" id="tab-tabelle" aria-selected="false" data-tab="tabelle">Tabelle</button>
+      <button role="tab" id="tab-tabelle" aria-selected="false" data-tab="tabelle">Rangliste</button>
+      <button role="tab" id="tab-liga" aria-selected="false" data-tab="liga">Liga</button>
       <button role="tab" id="tab-uebersicht" aria-selected="false" data-tab="uebersicht">Tippübersicht</button>
       <button role="tab" id="tab-regeln" aria-selected="false" data-tab="regeln">Regeln</button>
       <button role="tab" id="tab-admin" aria-selected="false" data-tab="admin" hidden>Verwaltung</button>
@@ -374,6 +390,30 @@ function viewUebersicht(){
   <p class="hint">Tipps der anderen werden ab Tippschluss sichtbar.</p>`;
 }
 
+// ---- Liga: Tabelle und Ergebnisse der Kreisliga D ----
+const MY_TEAM = CFG.myTeam || 'SW Overhagen II';
+function viewLiga(){
+  const t=S.tables.latest;
+  // Sortierung wie fussball.de: Punkte, Tordifferenz, geschossene Tore
+  const rows=[...((t&&t.rows)||[])].sort((a,b)=>b.pts-a.pts||(b.gf-b.ga)-(a.gf-a.ga)||b.gf-a.gf);
+  if(!rows.length) return emptyState();
+  const tab=rows.map((r,i)=>{ const d=r.gf-r.ga;
+    return `<tr class="${r.team===MY_TEAM?'mine':''}"><td class="rank">${i+1}.</td><td class="team-cell">${esc(r.team)}</td>
+      <td class="num">${r.gp}</td><td class="num">${r.gf}:${r.ga}</td><td class="num">${d>0?'+':''}${d}</td><td class="num total">${r.pts}</td></tr>`;}).join('');
+  const ms=mdMatches(S.md);
+  const res=ms.map(m=>`<div class="resrow ${m.home===MY_TEAM||m.away===MY_TEAM?'mine':''}">
+      <span class="t h">${esc(m.home)}</span>
+      ${hasRes(m)?`<span class="res" style="font-size:18px;padding:1px 8px">${m.hg}:${m.ag}</span>`:`<span class="res open" style="font-size:18px;padding:1px 8px">–:–</span>`}
+      <span class="t">${esc(m.away)}</span></div>`).join('');
+  const played=ms.filter(hasRes).length;
+  return `<h2 class="sec-h">Tabelle Kreisliga D</h2>
+  <div class="panel scroll"><table class="liga">
+    <thead><tr><th>Pl.</th><th>Team</th><th class="num">Sp.</th><th class="num">Tore</th><th class="num">+/−</th><th class="num">Pkt.</th></tr></thead>
+    <tbody>${tab}</tbody></table></div>
+  ${S.matches.length?`${mdBar()}<div class="panel">${res}</div>
+  <p class="hint">${played===ms.length?'Alle Ergebnisse da.':played?`${played} von ${ms.length} Ergebnissen da, der Rest folgt beim nächsten Abgleich.`:'Ergebnisse folgen nach dem Spieltag (So/Mo-Abend).'} Ergebnisse gibt es ab dem 9. Spieltag.</p>`:''}`;
+}
+
 function viewAdmin(){
   if(!isAdmin()) return `<div class="panel empty"><strong>Nur für den Tippspielleiter</strong></div>`;
   const pend=S.admPlayers.filter(p=>p.status==='pending'), appr=S.admPlayers.filter(p=>p.status==='approved'), rej=S.admPlayers.filter(p=>p.status==='rejected');
@@ -418,7 +458,7 @@ function render(){
   $('#tab-admin').textContent = pend? `Verwaltung (${pend})` : 'Verwaltung';
   const act=document.activeElement, focusId=act&&act.id, selS=act&&act.selectionStart, selE=act&&act.selectionEnd;
   const keep={}; ['authName','authPin'].forEach(id=>{ const el=document.getElementById(id); if(el) keep[id]=el.value; });
-  const v=({tipp:viewTipp,tabelle:viewTabelle,uebersicht:viewUebersicht,regeln:viewRegeln,admin:viewAdmin}[S.tab]||viewTipp)();
+  const v=({tipp:viewTipp,tabelle:viewTabelle,liga:viewLiga,uebersicht:viewUebersicht,regeln:viewRegeln,admin:viewAdmin}[S.tab]||viewTipp)();
   const up=S.tables.latest&&S.tables.latest.updated;
   $('#view').innerHTML=v+`<footer class="src">Spielplan und Tabelle: <a href="${esc(CFG.fussballDeUrl||'https://www.fussball.de')}" target="_blank" rel="noopener">fussball.de</a>${up?` · zuletzt abgeglichen ${esc(new Date(up).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}))} Uhr`:''}</footer>`;
   Object.entries(keep).forEach(([id,val])=>{ const el=document.getElementById(id); if(el) el.value=val; });
